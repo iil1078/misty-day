@@ -8,9 +8,9 @@ function escapeCell(value: string): string {
 }
 
 export function expensesToCSV(expenses: Expense[]): string {
-  const header = ["Date", "Category", "Description", "Amount"];
+  const header = ["Date", "Category", "Amount", "Description"];
   const rows = expenses.map((e) =>
-    [e.date, e.category, e.description, e.amount.toFixed(2)].map(escapeCell).join(","),
+    [e.date, e.category, e.amount.toFixed(2), e.description].map(escapeCell).join(","),
   );
   return [header.join(","), ...rows].join("\r\n");
 }
@@ -25,5 +25,6 @@ export function downloadCSV(expenses: Expense[], filename: string): void {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // Defer revoke so the browser has started the download first.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }

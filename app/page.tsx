@@ -9,9 +9,10 @@ import { MonthlyChart } from "@/components/MonthlyChart";
 import { CategoryBreakdown } from "@/components/CategoryBreakdown";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { EmptyState } from "@/components/EmptyState";
-import { Card, CardHeader, PageHeader, Skeleton } from "@/components/ui";
+import { Card, CardHeader, PageHeader, Skeleton, buttonSecondary } from "@/components/ui";
 import { currentMonthKey, monthKey, monthlyTotals, previousMonthKey, sum, totalsByCategory } from "@/lib/analytics";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { downloadCSV } from "@/lib/csv";
+import { formatCurrency, formatDate, todayISO } from "@/lib/format";
 
 type Period = "month" | "all";
 
@@ -48,6 +49,13 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+        actions={
+          expenses.length > 0 && (
+            <button type="button" onClick={() => downloadCSV(expenses, `expenses-${todayISO()}.csv`)} className={buttonSecondary}>
+              Export Data
+            </button>
+          )
+        }
       />
 
       {expenses.length === 0 ? (
