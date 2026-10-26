@@ -3,22 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useExpenses } from "@/components/ExpensesProvider";
 import { useExpenseActions } from "@/components/ExpenseActionsProvider";
-import { useToast } from "@/components/ToastProvider";
+import { useExport } from "@/components/export/ExportProvider";
 import { ExpenseFiltersBar } from "@/components/ExpenseFiltersBar";
 import { ExpenseList, type SortDir, type SortKey } from "@/components/ExpenseList";
 import { EmptyState } from "@/components/EmptyState";
 import { Card, PageHeader, PageLoading, buttonSecondary } from "@/components/ui";
 import { filterExpenses, sum } from "@/lib/analytics";
-import { downloadCSV } from "@/lib/csv";
-import { formatCurrency, todayISO } from "@/lib/format";
-import { EMPTY_FILTERS, type ExpenseFilters } from "@/lib/types";
+import { formatCurrency } from "@/lib/format";
+import { CATEGORIES, EMPTY_FILTERS, type ExpenseFilters } from "@/lib/types";
 
 const PAGE_SIZE = 25;
 
 export default function ExpensesPage() {
   const { expenses, isLoading } = useExpenses();
   const { openEdit, confirmDelete } = useExpenseActions();
-  const { toast } = useToast();
+  const { openExport } = useExport();
   const [filters, setFilters] = useState<ExpenseFilters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -37,16 +36,15 @@ export default function ExpensesPage() {
 
   const total = useMemo(() => sum(filtered), [filtered]);
 
-  const handleExport = () => {
-    if (filtered.length === 0) return;
-    try {
-      downloadCSV(filtered, `expenses-${todayISO()}.csv`);
-      toast(`Exported ${filtered.length} expense${filtered.length === 1 ? "" : "s"} to CSV`);
-    } catch (e) {
-      console.error(e);
-      toast("Export failed. Please try again.", { variant: "error" });
-    }
-  };
+  // Start the export from exactly what's on screen.
+  const handleExport = () =>
+    openExport({
+      from: filters.from,
+      to: filters.to,
+      categories: filters.category === "All" ? [...CATEGORIES] : [filters.category],
+      keyword: filters.search,
+      sort: `${sortKey}-${sortDir}`,
+    });
 
   if (isLoading) return <PageLoading />;
 
@@ -57,12 +55,12 @@ export default function ExpensesPage() {
         subtitle="Search, filter, edit and export your expenses."
         actions={
           expenses.length > 0 && (
-            <button type="button" onClick={handleExport} disabled={filtered.length === 0} className={buttonSecondary}>
+            <button type="button" onClick={handleExport} className={buttonSecondary}>
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden>
                 <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
                 <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
               </svg>
-              Export CSV
+              Export filtered…
             </button>
           )
         }

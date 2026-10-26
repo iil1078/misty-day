@@ -13,10 +13,20 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(8px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "slide-in-right": {
+          from: { opacity: "0.6", transform: "translateX(48px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "progress-indeterminate": {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(250%)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 150ms ease-out",
         "slide-up": "slide-up 200ms ease-out",
+        "slide-in-right": "slide-in-right 240ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "progress-indeterminate": "progress-indeterminate 1.1s ease-in-out infinite",
       },
     },
   },
